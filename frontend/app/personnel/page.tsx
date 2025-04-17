@@ -10,7 +10,8 @@ import { DashboardShell } from "@/components/dashboard-shell"
 import { PlusCircle, Search, Trash2, Edit, Calendar } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import type { Personnel } from "@/types"
-import { fetchPersonnels, deletePersonnel } from "@/lib/api"
+
+const API_BASE_URL = "http://localhost:9000"
 
 export default function PersonnelPage() {
   const [personnels, setPersonnels] = useState<Personnel[]>([])
@@ -21,7 +22,9 @@ export default function PersonnelPage() {
   useEffect(() => {
     const getPersonnels = async () => {
       try {
-        const data = await fetchPersonnels()
+        const res = await fetch(`${API_BASE_URL}/personnel`)
+        if (!res.ok) throw new Error("Erreur lors de la récupération")
+        const data = await res.json()
         setPersonnels(data)
       } catch (error) {
         toast({
@@ -40,7 +43,11 @@ export default function PersonnelPage() {
   const handleDelete = async (id: number) => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer ce membre du personnel ?")) {
       try {
-        await deletePersonnel(id)
+        const res = await fetch(`${API_BASE_URL}/personnel/${id}`, {
+          method: "DELETE",
+        })
+        if (!res.ok) throw new Error("Erreur lors de la suppression")
+
         setPersonnels(personnels.filter((p) => p.id !== id))
         toast({
           title: "Succès",
@@ -147,7 +154,11 @@ export default function PersonnelPage() {
                             <Edit className="h-4 w-4" />
                           </Button>
                         </Link>
-                        <Button variant="ghost" size="sm" onClick={() => personnel.id && handleDelete(personnel.id)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => personnel.id && handleDelete(personnel.id)}
+                        >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
                       </div>
